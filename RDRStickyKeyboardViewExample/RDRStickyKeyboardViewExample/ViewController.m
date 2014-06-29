@@ -118,12 +118,12 @@ static NSString * const CellIdentifier = @"cell";
 
 -(IBAction)onDoneTap:(id)sender
 {
-    NSLog(@"Done tapped!!");
+    NSLog(@"Send tapped!!");
 }
 
 -(IBAction)onCancelTap:(id)sender
 {
-    NSLog(@"Cancel tapped!!");
+    NSLog(@"Other tapped!!");
 }
 
 #pragma mark - UITextViewDelegate
