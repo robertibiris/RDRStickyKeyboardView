@@ -29,7 +29,7 @@
 
 static NSString * const CellIdentifier = @"cell";
 
-@interface ViewController () <UITableViewDataSource, UITableViewDelegate>
+@interface ViewController () <UITableViewDataSource, UITableViewDelegate, UITextViewDelegate, RDRStickyKeyboardViewDelegate>
 
 @property (nonatomic, strong) UITableView *tableView;
 @property (nonatomic, strong) RDRStickyKeyboardView *contentWrapper;
@@ -60,11 +60,20 @@ static NSString * const CellIdentifier = @"cell";
     |UIViewAutoresizingFlexibleHeight;
     [self.tableView registerClass:[UITableViewCell class]
            forCellReuseIdentifier:CellIdentifier];
-
+    
+    //configure the stickyKeyboardView
+    UIButton * rightButton = [self newButtonWithTitle:NSLocalizedString(@"Send", nil)];
+    UIButton * leftButton = [self newButtonWithTitle:NSLocalizedString(@"Other", nil)];
+    
+    RDRStickyKeyboardView * stickyKeyboardView = [[RDRStickyKeyboardView alloc] initWithScrollView:self.tableView delegate:self leftButton:leftButton rightButton:rightButton];
+    
+    stickyKeyboardView.frame = self.view.bounds;
+    stickyKeyboardView.autoresizingMask = UIViewAutoresizingFlexibleHeight|UIViewAutoresizingFlexibleWidth;
+    stickyKeyboardView.textView.delegate = self;
+    
     // Setup wrapper
-    self.contentWrapper = [[RDRStickyKeyboardView alloc] initWithScrollView:self.tableView];
-    self.contentWrapper.frame = self.view.bounds;
-    self.contentWrapper.autoresizingMask = UIViewAutoresizingFlexibleHeight|UIViewAutoresizingFlexibleWidth;
+    self.contentWrapper = stickyKeyboardView;
+    
     [self.view addSubview:self.contentWrapper];
 }
 
@@ -92,6 +101,59 @@ static NSString * const CellIdentifier = @"cell";
 - (NSInteger)numberOfSectionsInTableView:(UITableView *)tableView
 {
     return 1;
+}
+
+#pragma mark - RDRStickyKeyboardViewDelegate
+
+-(void)didSelectLeftKeyboardButton
+{
+    [self onCancelTap:nil];
+}
+-(void)didSelectRightKeyboardButton
+{
+    [self onDoneTap:nil];
+}
+
+#pragma mark - Actions
+
+-(IBAction)onDoneTap:(id)sender
+{
+    NSLog(@"Done tapped!!");
+}
+
+-(IBAction)onCancelTap:(id)sender
+{
+    NSLog(@"Cancel tapped!!");
+}
+
+#pragma mark - UITextViewDelegate
+
+- (void)textViewDidBeginEditing:(UITextView *)textView{
+    NSLog(@"textViewDidBeginEditing!!..");
+}
+
+
+- (void)textViewDidEndEditing:(UITextView *)textView{
+    NSLog(@"textViewDidEndEditing!!..");
+    
+}
+
+#pragma mark - Utilities
+
+- (UIButton *)newButtonWithTitle:(NSString *)title
+{
+    UIButton * button = [UIButton buttonWithType:UIButtonTypeSystem];
+    button.titleLabel.font = [UIFont systemFontOfSize:14.0f];
+    
+    [button setTitle:title
+            forState:UIControlStateNormal];
+    return button;
+}
+
+
+-(void)hideKeyboard
+{
+    [self.view endEditing:YES];
 }
 
 @end

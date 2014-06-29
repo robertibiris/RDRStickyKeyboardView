@@ -52,9 +52,28 @@
 
 @end
 
+#pragma mark - RDRStickyKeyboardViewDelegate
+
+@protocol RDRStickyKeyboardViewDelegate <NSObject>
+
+-(void)didSelectLeftKeyboardButton;
+-(void)didSelectRightKeyboardButton;
+
+@end
+
 #pragma mark - RDRStickyKeyboardView
 
 @interface RDRStickyKeyboardView : UIView
+
+/**
+ *  Delegate to notify about left/right button actions.
+ */
+@property(nonatomic, weak) id<RDRStickyKeyboardViewDelegate> delegate;
+
+/**
+ *  The UITextView instance from the inputViewScrollView to be accessed by external classes to be able to handle text content and delegation.
+ */
+@property(nonatomic, readonly) UITextView * textView;
 
 @property (nonatomic, strong, readonly) UIScrollView *scrollView;
 
@@ -73,7 +92,10 @@
 @property (nonatomic, strong, readonly) RDRKeyboardInputView *inputView;
 
 // Designated initializer
-- (instancetype)initWithScrollView:(UIScrollView *)scrollView;
+- (instancetype)initWithScrollView:(UIScrollView *)scrollView
+                          delegate:(id<RDRStickyKeyboardViewDelegate>)delegate
+                        leftButton:(UIButton *)leftButtonOrNil
+                       rightButton:(UIButton *)rightButtonOrNil;
 
 - (void)showKeyboard;
 - (void)hideKeyboard;

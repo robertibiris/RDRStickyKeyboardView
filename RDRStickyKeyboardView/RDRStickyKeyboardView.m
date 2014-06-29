@@ -207,10 +207,13 @@ static inline UIViewAnimationOptions RDRAnimationOptionsForCurve(UIViewAnimation
 #define RDR_KEYBOARD_INPUT_VIEW_MARGIN_BUTTONS_VERTICAL             7
 
 @interface RDRKeyboardInputView () {
-    UITextView *_textView;
-    UIButton *_leftButton;
-    UIButton *_rightButton;
+
 }
+
+@property (nonatomic, strong) UIButton *leftButton;
+@property (nonatomic, strong) UIButton *rightButton;
+@property (nonatomic, strong) UITextView *textView;
+
 
 @property (nonatomic, strong, readonly) UIToolbar *toolbar;
 
@@ -225,6 +228,17 @@ static inline UIViewAnimationOptions RDRAnimationOptionsForCurve(UIViewAnimation
     // Input view sets its own height
     if (self = [super initWithFrame:frame])
     {
+        [self _setupSubviews];
+    }
+    
+    return self;
+}
+
+-(id)initWithLeftButton:(UIButton *)leftButtonOrNil rightButton:(UIButton *)rightButtonOrNil
+{
+    if (self = [super init]) {
+        self.leftButton = leftButtonOrNil;
+        self.rightButton = rightButtonOrNil;
         [self _setupSubviews];
     }
     
@@ -280,11 +294,7 @@ static inline UIViewAnimationOptions RDRAnimationOptionsForCurve(UIViewAnimation
         return _leftButton;
     }
     
-    _leftButton = [UIButton buttonWithType:UIButtonTypeSystem];
-    _leftButton.titleLabel.font = [UIFont systemFontOfSize:15.0f];
-    
-    [_leftButton setTitle:NSLocalizedString(@"Other", nil)
-                 forState:UIControlStateNormal];
+    _leftButton = [[UIButton alloc] initWithFrame:CGRectZero];
     
     return _leftButton;
 }
@@ -295,11 +305,7 @@ static inline UIViewAnimationOptions RDRAnimationOptionsForCurve(UIViewAnimation
         return _rightButton;
     }
     
-    _rightButton = [UIButton buttonWithType:UIButtonTypeSystem];
-    _rightButton.titleLabel.font = [UIFont systemFontOfSize:14.0f];
-    
-    [_rightButton setTitle:NSLocalizedString(@"Send", nil)
-                  forState:UIControlStateNormal];
+    _rightButton = [[UIButton alloc] initWithFrame:CGRectZero];
     
     return _rightButton;
 }
@@ -481,6 +487,9 @@ static NSInteger const RDRInterfaceOrientationUnknown   = -1;
 
 @property (nonatomic, strong, readonly) RDRKeyboardInputView *inputViewKeyboard;
 
+@property(nonatomic, strong) UIButton * leftButton;
+@property(nonatomic, strong) UIButton * rightButton;
+
 @end
 
 @implementation RDRStickyKeyboardView
@@ -488,9 +497,16 @@ static NSInteger const RDRInterfaceOrientationUnknown   = -1;
 #pragma mark - Lifecycle
 
 - (instancetype)initWithScrollView:(UIScrollView *)scrollView
+                          delegate:(id<RDRStickyKeyboardViewDelegate>)delegate
+                        leftButton:(UIButton *)leftButtonOrNil
+                       rightButton:(UIButton *)rightButtonOrNil
 {
     if (self = [super init])
     {
+        self.leftButton = leftButtonOrNil;
+        self.rightButton = rightButtonOrNil;
+        self.delegate = delegate;
+        
         _scrollView = scrollView;
         _scrollView.autoresizingMask = UIViewAutoresizingFlexibleWidth|
         UIViewAutoresizingFlexibleHeight;
@@ -500,6 +516,9 @@ static NSInteger const RDRInterfaceOrientationUnknown   = -1;
         
         [self _setupSubviews];
         [self _registerForNotifications];
+        //setup the actions for the buttons
+        [self _setupKeyboardButtonActions];
+        
     }
     
     return self;
@@ -524,7 +543,7 @@ static NSInteger const RDRInterfaceOrientationUnknown   = -1;
 - (RDRKeyboardInputView *)inputViewScrollView
 {
     if (!_inputViewScrollView) {
-        _inputViewScrollView = [RDRKeyboardInputView new];
+        _inputViewScrollView = [[RDRKeyboardInputView alloc] initWithLeftButton:self.leftButton rightButton:self.rightButton];
     }
     
     return _inputViewScrollView;
@@ -533,6 +552,11 @@ static NSInteger const RDRInterfaceOrientationUnknown   = -1;
 - (RDRKeyboardInputView *)inputView
 {
     return self.inputViewKeyboard;
+}
+
+-(UITextView *)textView
+{
+    return self.inputViewScrollView.textView;
 }
 
 #pragma mark - Overrides
@@ -562,6 +586,32 @@ static NSInteger const RDRInterfaceOrientationUnknown   = -1;
 }
 
 #pragma mark - Private
+
+-(void)_setupKeyboardButtonActions
+{
+//    inputViewScrollView
+    [self.inputViewScrollView.leftButton addTarget:self action:@selector(onLeftKeyboardButtonTap:) forControlEvents:UIControlEventTouchUpInside];
+    
+    [self.inputViewScrollView.rightButton addTarget:self action:@selector(onRightKeyboardButtonTap:) forControlEvents:UIControlEventTouchUpInside];
+    
+    
+//    inputViewKeyboard
+    [self.inputViewKeyboard.leftButton addTarget:self action:@selector(onLeftKeyboardButtonTap:) forControlEvents:UIControlEventTouchUpInside];
+    
+    [self.inputViewKeyboard.rightButton addTarget:self action:@selector(onRightKeyboardButtonTap:) forControlEvents:UIControlEventTouchUpInside];
+}
+
+#pragma mark - Keyboard Actions handlers
+
+-(IBAction)onLeftKeyboardButtonTap:(id)sender
+{
+    [self.delegate didSelectLeftKeyboardButton];
+}
+
+-(IBAction)onRightKeyboardButtonTap:(id)sender
+{
+    [self.delegate didSelectRightKeyboardButton];
+}
 
 - (void)_setupSubviews
 {
