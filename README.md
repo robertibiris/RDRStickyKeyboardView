@@ -18,11 +18,38 @@ Check out the sample project to learn more.
 
 ```objectivec
 UITableView *tableView = ...;
-RDRStickyKeyboardView *keyboardView = [[RDRStickyKeyboardView alloc] initWithScrollView:tableView];
-keyboardView.frame = self.view.bounds;
-keyboardView.autoresizingMask = UIViewAutoresizingFlexibleHeight|UIViewAutoresizingFlexibleWidth;
-[self.view addSubview:keyboardView];
+//create your own buttons to show on the keyboard
+UIButton * rightButton = ...;
+UIButton * leftButton = ...;
+    
+RDRStickyKeyboardView * stickyKeyboardView = [[RDRStickyKeyboardView alloc] initWithScrollView:tableView delegate:self leftButton:leftButton rightButton:rightButton];
+    
+stickyKeyboardView.frame = self.view.bounds;
+stickyKeyboardView.autoresizingMask = UIViewAutoresizingFlexibleHeight|UIViewAutoresizingFlexibleWidth;
+//set delegate to receive left/right button actions
+stickyKeyboardView.textView.delegate = self;
+    
+[self.view addSubview:stickyKeyboardView];
 ```
+
+## RDRStickyKeyboardViewDelegate
+In order to catch when the user Taps on the left/right buttons of the keyboard, you must conform to the RDRStickyKeyboardViewDelegate protocol.
+
+```objectivec
+-(void)didSelectLeftKeyboardButton
+{
+    //code for handling left keyboard button Tap
+}
+-(void)didSelectRightKeyboardButton
+{
+    //code for handling right keyboard button Tap
+}
+```
+
+## Accessing the UITextView
+You have readOnly access to the UITextView shown as a convenience property 'textView' of the RDRStickyKeyboardView class.
+Use it to access text content as well as for implementing UITextViewDelegate if your code requires this (see demo project for more info on this).
+
 
 ## Requirements
 * ARC
